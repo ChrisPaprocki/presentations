@@ -1,0 +1,269 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\begin_preamble
+ \date{ }
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman lmodern
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 3cm
+\topmargin 3cm
+\rightmargin 3cm
+\bottommargin 3cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\listings_params "basicstyle={\ttfamily\small}"
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Appendix to the 
+\begin_inset Quotes eld
+\end_inset
+
+Functional Programming in C++
+\begin_inset Quotes erd
+\end_inset
+
+ talk
+\end_layout
+
+\begin_layout Author
+Krzysztof Paprocki, C++ Meetup Zurich, 22.02.2017
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+We talked about number of performances: those related to the development
+ time and maintenance effort and those related to the program execution.
+\end_layout
+
+\begin_layout Standard
+All of these performances are of equal importance and none of them can be
+ neglected.
+ In this Appendix to the talk 
+\begin_inset Quotes eld
+\end_inset
+
+Functional Programming in C++
+\begin_inset Quotes erd
+\end_inset
+
+ the performance issues of tail-call optimization and lazy evaluation are
+ recapped and associated with examples and further comment.
+\end_layout
+
+\begin_layout Section
+Tail-call optimization
+\end_layout
+
+\begin_layout Standard
+In the recursion, when the recursive call is the last operation which is
+ done before returning, the special trick may be applied - tail-call optimizatio
+n.
+ In that case no stack frame is generated, but a jump is applied instead.
+ Thanks to this trick, recursion with tail-call optimization is as efficient
+ as a dear old while loop.
+\end_layout
+
+\begin_layout Standard
+In order to present the capabilities of the main-steam and non-main-stream
+ compilers the following test routines have been used:
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand lstinputlisting
+filename "tailCall.cpp"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The above code compiled with -O3 optimization with a little bit old version
+ of clang (3.6.2) resulted with:
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand lstinputlisting
+filename "tailCallClangO3.s"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Running three years old gcc compiler version 5.2.1 emits the following results:
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand lstinputlisting
+filename "tailCallGccO3.s"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We see that both compilers are optimizing very well.
+ Even if the recursive call is not in a tail call position, gcc and clang
+ managed to optimize away the call.
+ In fact, they are so good, that the optimization is hardly just the tail-call
+ optimization.
+\end_layout
+
+\begin_layout Standard
+Let's check cross-compilation for embedded systems.
+ For the test Keil uVision version 5.17.0.0 with Armcc compiler version 5.06
+ have been used.
+ The results are more predictable (compiled with -O3 optimization):
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand lstinputlisting
+filename "keil.s"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The try with recursion in tail-call position has generated the expected
+ assembly - no stack frame is created during recursive call.
+ The test with non-tail recursive call does create a stack frame per recursion.
+ Armcc compiler proved to be much less clever in optimization (but at the
+ same time more predictable).
+ Unfortunately, this is all compiler-specific, that means: unspecified and
+ therefore cannot be trusted.
+\end_layout
+
+\begin_layout Section
+Lazy evaluation
+\end_layout
+
+\begin_layout Standard
+I worked in a project, which happened to use cooperative scheduler.
+ Thanks to that a whole class of problems related to threads priorities
+ has been eliminated, but other challenges had to be taken care of.
+ More specifically, there were a few cases where the thread blocked the
+ system for too long, mainly in the area of communication, where sending
+ out the data was handled in a lazy way.
+ In an unlucky situation in which the communication thread decided to send
+ out a bunch of data, but the CPU was needed for more important real-time
+ operation, the system failed.
+ Obviously, the solution was just to balance the work of communication thread
+ in the way, that it did not behave in a lazily, but was more eager to process
+ the data.
+ Due to the copy rights the exact code cannot be presented here.
+\end_layout
+
+\begin_layout Section
+Summary
+\end_layout
+
+\begin_layout Standard
+Applicability of tail-call optimization as well as lazy evaluation are strictly
+ related to the requirements of the application.
+ As for lazy evaluation, if there is no risk that postponed execution may
+ create real-time issues, it may improve execution performance.
+ This improvement comes from two sources.
+ Firstly, if the computationally expensive lazy code is rarely executed
+ due to its laziness, it naturally makes overall performance of the program
+ better.
+ Secondly, lazy code gives the compiler more opportunities to optimize.
+ Of course in order ensure that the optimization took place, the code must
+ be profiled and/or the assembly should be inspected.
+\end_layout
+
+\begin_layout Standard
+Usefulness of tail-call optimization in C++ must be judged even more carefully.
+ If recursion is deep, the risk of stack overflow and application crash
+ is high.
+ In the case of critical, or worse - safety critical applications, the statement
+ that 
+\begin_inset Quotes eld
+\end_inset
+
+the compiler will probably optimize it
+\begin_inset Quotes erd
+\end_inset
+
+ is insufficient and the assembly must be checked.
+ Scala-like annotations would be very good solution to this issue, as the
+ code which is not tail-call optimized would not compile.
+\end_layout
+
+\end_body
+\end_document
