@@ -216,7 +216,7 @@ Lazy evaluation
 \begin_layout Standard
 I worked in a project, which happened to use cooperative scheduler.
  Thanks to that a whole class of problems related to threads priorities
- has been eliminated, but other challenges had to be taken care of.
+ have been eliminated, but other challenges had to be taken care of.
  More specifically, there were a few cases where the thread blocked the
  system for too long, mainly in the area of communication, where sending
  out the data was handled in a lazy way.
